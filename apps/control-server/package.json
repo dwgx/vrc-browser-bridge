@@ -1,0 +1,14 @@
+{
+  "name": "@vrcbb/control-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@vrcbb/protocol": "0.1.0",
+    "playwright": "^1.53.0",
+    "ws": "^8.18.2"
+  }
+}

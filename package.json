@@ -1,0 +1,29 @@
+{
+  "name": "vrc-browser-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VRChat-compatible shared browser bridge prototype.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "check": "tsc -b --pretty false",
+    "dev": "tsx apps/control-server/src/index.ts",
+    "companion": "tsx apps/companion/src/index.ts",
+    "media": "tsx apps/media-pipeline/src/index.ts",
+    "start": "tsx apps/control-server/src/index.ts"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "playwright": "^1.53.0",
+    "ws": "^8.18.2"
+  }
+}

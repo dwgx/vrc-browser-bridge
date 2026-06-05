@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+tools/
+fake-output.log
+auto.key
+auto.crt
+.cache/
+.tmp/

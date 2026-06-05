@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VRC 浏览器桥接台</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">V</span>
+          <div>
+            <h1>VRC 浏览器桥接台</h1>
+            <p>共享浏览器 · RTSP 输出</p>
+          </div>
+        </div>
+
+        <form id="urlForm" class="addressbar">
+          <button id="backButton" type="button" title="后退" aria-label="后退">‹</button>
+          <button id="forwardButton" type="button" title="前进" aria-label="前进">›</button>
+          <button id="reloadButton" type="button" title="刷新" aria-label="刷新">↻</button>
+          <input id="urlInput" type="text" autocomplete="off" spellcheck="false" value="https://example.com" aria-label="输入网址或搜索">
+          <button type="submit">打开网页</button>
+        </form>
+
+        <div class="top-status">
+          <span id="serverChip" class="chip chip-warn">连接中</span>
+          <span id="browserChip" class="chip">Chromium 未知</span>
+          <span id="mediaChip" class="chip">视频流未启用</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="viewer-column">
+          <div class="viewer-toolbar">
+            <div>
+              <strong id="lockHeadline">开放编辑</strong>
+              <span id="lockSubline">输入会直接同步到浏览器</span>
+            </div>
+            <div class="viewer-actions">
+              <div class="profile-switch" role="group" aria-label="串流档位">
+                <button type="button" data-profile="360p">360</button>
+                <button type="button" data-profile="720p" class="active">720</button>
+                <button type="button" data-profile="1080p">1080</button>
+                <button type="button" data-profile="auto">Auto</button>
+              </div>
+              <button id="snapshotButton" type="button">刷新预览</button>
+              <button id="lockButton" type="button" class="primary">我在操作</button>
+            </div>
+          </div>
+
+          <div id="surface" class="browser-surface can-control" tabindex="0" aria-label="远程浏览器输入区域">
+            <img id="snapshotImage" alt="Chromium 预览快照">
+            <div class="surface-grid"></div>
+            <div id="cursor" class="remote-cursor"></div>
+            <div id="readonlyOverlay" class="surface-overlay">
+              <strong>开放编辑</strong>
+              <span>点击、滚轮、输入都会同步</span>
+            </div>
+            <div class="surface-meta">
+              <span id="coordLabel">x 0 · y 0</span>
+              <span id="viewportLabel">1280 × 720</span>
+            </div>
+          </div>
+
+          <div class="statusbar">
+            <span id="sessionLabel">session demo</span>
+            <span id="playerLabel">player mock-player</span>
+            <span id="seqLabel">seq 1</span>
+            <span id="latencyLabel">WS -- ms</span>
+            <span id="lastEventLabel">最后事件：无</span>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <div class="tabs" role="tablist" aria-label="侧边面板">
+            <button class="tab active" type="button" data-tab="control">控制</button>
+            <button class="tab" type="button" data-tab="clipboard">剪贴板</button>
+            <button class="tab" type="button" data-tab="metrics">性能</button>
+            <button class="tab" type="button" data-tab="logs">日志</button>
+          </div>
+
+          <section class="tab-panel active" data-panel="control">
+            <div class="panel-block lock-card">
+              <p class="label">协作状态</p>
+              <h2 id="lockCardTitle">开放编辑</h2>
+              <p id="lockCardBody">所有人都能操作。右上角标记只用来提示当前是谁在动。</p>
+              <div class="button-row">
+                <button id="releaseButton" type="button">取消标记</button>
+                <button id="takeoverButton" type="button">我在操作</button>
+              </div>
+            </div>
+
+            <div class="panel-block">
+              <p class="label">文本输入</p>
+              <form id="textForm" class="stack">
+                <textarea id="textInput" rows="4" autocomplete="off" spellcheck="false" placeholder="输入文字并发送到当前焦点"></textarea>
+                <button type="submit" class="primary">发送文本</button>
+              </form>
+            </div>
+
+            <div class="panel-block">
+              <p class="label">常用键</p>
+              <div class="key-grid">
+                <button type="button" data-key="Enter">Enter</button>
+                <button type="button" data-key="Escape">Esc</button>
+                <button type="button" data-key="Tab">Tab</button>
+                <button type="button" data-key="Control+L">Ctrl+L</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="clipboard">
+            <div class="panel-block">
+              <p class="label">手动剪贴板</p>
+              <textarea id="clipboardInput" rows="8" spellcheck="false" placeholder="后续会接入浏览器剪贴板。当前先保留手动通道。"></textarea>
+              <div class="button-row">
+                <button id="sendClipboardButton" type="button">发送到浏览器</button>
+                <button id="clearClipboardButton" type="button">清空</button>
+              </div>
+              <p class="hint">共享浏览器中输入的密码和剪贴板内容会被旁观者看到。</p>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="metrics">
+            <div class="metric-grid">
+              <div class="metric">
+                <span>WebSocket</span>
+                <strong id="metricWs">-- ms</strong>
+              </div>
+              <div class="metric">
+                <span>事件 RTT</span>
+                <strong id="metricRtt">-- ms</strong>
+              </div>
+              <div class="metric">
+                <span>事件积压</span>
+                <strong id="metricQueue">0</strong>
+              </div>
+              <div class="metric">
+                <span>浏览器画面</span>
+                <strong id="metricViewport">1280×720</strong>
+              </div>
+              <div class="metric">
+                <span>串流档位</span>
+                <strong id="metricProfile">720P</strong>
+              </div>
+              <div class="metric wide">
+                <span>RTSP 地址</span>
+                <strong id="metricRtsp">rtsp://127.0.0.1:8554/browser</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="logs">
+            <div class="log-toolbar">
+              <select id="logFilter" aria-label="日志过滤">
+                <option value="all">全部</option>
+                <option value="success">成功</option>
+                <option value="rejected">拒绝</option>
+                <option value="error">错误</option>
+                <option value="duplicate">重复</option>
+              </select>
+              <button id="clearLogButton" type="button">清空日志</button>
+            </div>
+            <div class="event-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th>类型</th>
+                    <th>seq</th>
+                    <th>结果</th>
+                    <th>耗时</th>
+                  </tr>
+                </thead>
+                <tbody id="eventLog"></tbody>
+              </table>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script src="/main.js"></script>
+  </body>
+</html>

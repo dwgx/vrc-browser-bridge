@@ -1,0 +1,13 @@
+{
+  "name": "@vrcbb/companion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@vrcbb/protocol": "0.1.0",
+    "ws": "^8.18.2"
+  }
+}
