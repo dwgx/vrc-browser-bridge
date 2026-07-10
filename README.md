@@ -1,4 +1,4 @@
-# VRC Browser Bridge
+# VRC Browser Bridge Lol Project 他只是个想法
 
 Shared interactive browser bridge for VRChat worlds.
 
